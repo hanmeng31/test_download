@@ -1,7 +1,7 @@
 import multiprocessing as mp
 import youtube_dl
 import os
-from pydub import AudioSegment
+# from pydub import AudioSegment
 import wave
 import logging
 from google.cloud import storage
@@ -52,22 +52,22 @@ def download_audio(file_paths_, yt_id, start_time, end_time):
         ydl.download([web_url])  # download the audio file from YouTube to a file named random_file_name
 
     intermediate_path = os.path.join(os.getcwd(), 'int' + random_file_name)
-    subprocess.call(['ffmpeg', '-i', whole_path, '-acodec', 'pcm_u8', '-ar', '16000', intermediate_path])
+    subprocess.call(['ffmpeg', '-ss', str(start_time), '-i', whole_path, '-t', str(end_time-start_time), '-acodec', 'pcm_u8', '-ar', '16000', intermediate_path])
 
-    audio_data = AudioSegment.from_wav(intermediate_path)  # get the audio data
-    sliced_data = audio_data[int(start_time * 1000): int(end_time * 1000)]
-    random_file_name_s = random_file_name[: -4] + '_s' + '.wav'
-    whole_path_s = os.path.join(os.getcwd(), random_file_name_s)
-    sliced_data.export(whole_path_s, format="wav")
+    # audio_data = AudioSegment.from_wav(intermediate_path)  # get the audio data
+    # sliced_data = audio_data[int(start_time * 1000): int(end_time * 1000)]
+    # random_file_name_s = random_file_name[: -4] + '_s' + '.wav'
+    # whole_path_s = os.path.join(os.getcwd(), random_file_name_s)
+    # sliced_data.export(whole_path_s, format="wav")
     # copy the content to gcs
     client = storage.Client(file_paths_['project'])
     output_bucket = client.get_bucket(file_paths_['target_bucket'])
     target_location = yt_id + '.wav'
     output_blob = output_bucket.blob(target_location)
-    output_blob.upload_from_filename(whole_path_s)
+    output_blob.upload_from_filename(intermediate_path)
     os.remove(whole_path)
     os.remove(intermediate_path)
-    os.remove(whole_path_s)
+    # os.remove(whole_path_s)
     print("success")
     return None
 
