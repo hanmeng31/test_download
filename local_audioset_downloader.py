@@ -38,11 +38,7 @@ def download_audio(file_paths_, yt_id, start_time, end_time):
             'outtmpl': whole_path,  # name the file the ID of the video
             'noplaylist': True,  # only download single song, not playlist
             'audioquality': 1,
-            # 'postprocessors': [{
-            #     'key': 'FFmpegExtractAudio',
-            #     'preferredcodec': 'mp3',
-            #     'preferredquality': '192',
-            # }],
+            'quiet': True
         }
     except Exception as e:
         print(e)
@@ -52,7 +48,7 @@ def download_audio(file_paths_, yt_id, start_time, end_time):
         ydl.download([web_url])  # download the audio file from YouTube to a file named random_file_name
 
     intermediate_path = os.path.join(os.getcwd(), 'int' + random_file_name)
-    subprocess.call(['ffmpeg', '-ss', str(start_time), '-i', whole_path, '-t', str(end_time-start_time), '-acodec', 'pcm_u8', '-ar', '16000', intermediate_path])
+    subprocess.call(['ffmpeg', '-loglevel', 'quiet', '-ss', str(start_time), '-i', whole_path, '-t', str(end_time-start_time), '-acodec', 'pcm_u8', '-ar', '16000', intermediate_path])
 
     # audio_data = AudioSegment.from_wav(intermediate_path)  # get the audio data
     # sliced_data = audio_data[int(start_time * 1000): int(end_time * 1000)]
@@ -68,7 +64,7 @@ def download_audio(file_paths_, yt_id, start_time, end_time):
     os.remove(whole_path)
     os.remove(intermediate_path)
     # os.remove(whole_path_s)
-    print("success")
+    print("Success")
     return None
 
 
@@ -106,7 +102,7 @@ def manager_function(file_paths, num_workers=20):
                 if row[0][0] == '#':
                     continue
                 ytid, t_start, t_end = row[0], float(row[1]), float(row[2])
-                print("Processing", ytid)
+                # print("Processing", ytid)
                 if is_exist(file_paths, file_paths['target_bucket'], ytid):
                     print(ytid, "exists.")
                     continue
