@@ -1,7 +1,7 @@
+# Author: Han Meng
 import multiprocessing as mp
 import youtube_dl
 import os
-# from pydub import AudioSegment
 import wave
 import logging
 from google.cloud import storage
@@ -15,7 +15,7 @@ import subprocess
 def is_exist(file_paths_, bucket_name, file_path):
     client = storage.Client(file_paths_['project'])
     bucket = client.bucket(bucket_name)
-    blob = bucket.get_blob(file_path)
+    blob = bucket.get_blob(file_path + '.wav')
     if blob is None:
         return False
     else:
@@ -50,11 +50,6 @@ def download_audio(file_paths_, yt_id, start_time, end_time):
     intermediate_path = os.path.join(os.getcwd(), 'int' + random_file_name)
     subprocess.call(['ffmpeg', '-loglevel', 'quiet', '-ss', str(start_time), '-i', whole_path, '-t', str(end_time-start_time), '-acodec', 'pcm_u8', '-ar', '16000', intermediate_path])
 
-    # audio_data = AudioSegment.from_wav(intermediate_path)  # get the audio data
-    # sliced_data = audio_data[int(start_time * 1000): int(end_time * 1000)]
-    # random_file_name_s = random_file_name[: -4] + '_s' + '.wav'
-    # whole_path_s = os.path.join(os.getcwd(), random_file_name_s)
-    # sliced_data.export(whole_path_s, format="wav")
     # copy the content to gcs
     client = storage.Client(file_paths_['project'])
     output_bucket = client.get_bucket(file_paths_['target_bucket'])
@@ -77,7 +72,7 @@ def manager_function(file_paths, num_workers=20):
     print("Manager function started")
     # download the meta file
     current_folder = os.getcwd()
-    meta_file_name = os.path.join(current_folder, 'combined_meta.csv')
+    meta_file_name = os.path.join(current_folder, 'segment_x.csv')
     if not os.path.isfile(meta_file_name):
         print("Downloading the meta file.")
         client = storage.Client(project='datascience-181217')
@@ -137,7 +132,7 @@ if __name__ == '__main__':
                      'balanced_train': 'balanced_train_segments.csv',
                      'evaluation': 'eval_segments.csv'},
         'raw_class_data': 'ontology.json',
-        'all_data': 'combined_segments.csv',
+        'all_data': 'segment_x.csv',
         'class_data_dict': 'metadata_dict.npy',
         'target_bucket': 'audioset_dataset'
     }
