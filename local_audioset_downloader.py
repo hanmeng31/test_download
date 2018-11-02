@@ -85,7 +85,7 @@ def manager_function(file_paths, num_workers=20):
     print("Manager function started")
     # download the meta file
     current_folder = os.getcwd()
-    meta_file_name = os.path.join(current_folder, 'segment_16.csv')
+    meta_file_name = os.path.join(current_folder, file_paths['all_data'])
     if not os.path.isfile(meta_file_name):
         print("Downloading the meta file.")
         client = storage.Client(project='datascience-181217')
@@ -145,7 +145,7 @@ if __name__ == '__main__':
                      'balanced_train': 'balanced_train_segments.csv',
                      'evaluation': 'eval_segments.csv'},
         'raw_class_data': 'ontology.json',
-        'all_data': 'segment_16.csv',
+        'all_data': 'segment_x.csv',
         'class_data_dict': 'metadata_dict.npy',
         'target_bucket': 'audioset_dataset'
     }
