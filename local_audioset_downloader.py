@@ -44,8 +44,21 @@ def download_audio(file_paths_, yt_id, start_time, end_time):
         print(e)
 
     with youtube_dl.YoutubeDL(options) as ydl:
-        print('url is:', web_url)
-        ydl.download([web_url])  # download the audio file from YouTube to a file named random_file_name
+        # print('url is:', web_url)
+        try:
+            print("Downloading", web_url)
+            ydl.download([web_url])  # download the audio file from YouTube to a file named random_file_name
+        except Exception as e:
+            print("Failed downloading the initial time.")
+            print(e)
+            # try 5 more times
+            for i in range(5):
+                try:
+                    print("Retry:", (i+1), "time.")
+                    ydl.download([web_url])
+                    break
+                except Exception as e2:
+                    print(e2)
 
     intermediate_path = os.path.join(os.getcwd(), 'int' + random_file_name)
     subprocess.call(['ffmpeg', '-loglevel', 'quiet', '-ss', str(start_time), '-i', whole_path, '-t', str(end_time-start_time), '-acodec', 'pcm_u8', '-ar', '16000', intermediate_path])
@@ -72,7 +85,7 @@ def manager_function(file_paths, num_workers=20):
     print("Manager function started")
     # download the meta file
     current_folder = os.getcwd()
-    meta_file_name = os.path.join(current_folder, 'segment_x.csv')
+    meta_file_name = os.path.join(current_folder, 'segment_16.csv')
     if not os.path.isfile(meta_file_name):
         print("Downloading the meta file.")
         client = storage.Client(project='datascience-181217')
@@ -132,7 +145,7 @@ if __name__ == '__main__':
                      'balanced_train': 'balanced_train_segments.csv',
                      'evaluation': 'eval_segments.csv'},
         'raw_class_data': 'ontology.json',
-        'all_data': 'segment_x.csv',
+        'all_data': 'segment_16.csv',
         'class_data_dict': 'metadata_dict.npy',
         'target_bucket': 'audioset_dataset'
     }
